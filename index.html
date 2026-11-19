@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f2efe5">
+<title>IS5540｜开考倒计时</title>
+<style>
+:root{--paper:#f2efe5;--ink:#181d27;--muted:#595e68;--line:#a6a8a6;--signal:#aa2f1d;--mono:ui-monospace,"SFMono-Regular",Consolas,monospace;font-family:system-ui,sans-serif;background:var(--paper);color:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0}
+.page{min-height:100svh;max-width:1600px;margin:auto;padding:0 clamp(20px,5vw,80px)}
+.masthead,.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0;border-bottom:1px solid var(--ink)}
+.course{display:flex;align-items:center;gap:14px}
+.course b{font:800 1.13rem var(--mono);color:var(--paper);background:var(--ink);padding:8px 10px}
+.course span{font-size:.875rem;font-weight:650}
+button{background:transparent;color:inherit;font:650 .875rem system-ui;border:1px solid currentColor;padding:8px 12px;cursor:pointer;white-space:nowrap}
+button:hover,button:focus-visible{background:var(--ink);color:var(--paper)}
+main{animation:arrive .55s ease-out both}
+@keyframes arrive{from{opacity:0;transform:translateY(8px)}}
+.hero{padding:clamp(30px,6vh,76px) 0 clamp(26px,5vh,52px)}
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:var(--muted);font:650 .875rem var(--mono)}
+.status{color:var(--signal);display:flex;align-items:center;gap:8px}
+.status::before{content:"";display:block;width:7px;height:7px;background:currentColor}
+h1{font-size:clamp(1.45rem,4vw,3rem);margin:14px 0 5px;letter-spacing:-.05em}
+.clock{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--ink);margin-top:20px}
+.unit{padding:clamp(6px,1.6vw,23px);min-width:0}
+.unit+.unit{border-left:1px solid var(--ink)}
+.value{display:block;font:800 clamp(2.15rem,14.2vw,13rem)/.95 var(--mono);letter-spacing:-.105em;font-variant-numeric:tabular-nums}
+.unit:last-child .value{color:var(--signal)}
+.label{display:block;margin-top:12px;font:650 .875rem var(--mono);color:var(--muted)}
+.diagram{margin:0 0 18px;border-top:1px solid var(--ink)}
+figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 0;font-weight:700;font-size:.9rem}
+figcaption span{font:650 .875rem var(--mono);color:var(--signal)}
+.network{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(54px,auto));gap:14px 8%;padding:16px clamp(7px,3vw,40px);background-color:#e9e7de;background-image:linear-gradient(#34394312 1px,transparent 1px),linear-gradient(90deg,#34394312 1px,transparent 1px);background-size:20px 20px;isolation:isolate}
+canvas{position:absolute;width:100%;height:100%;inset:0;z-index:-1}
+.node{align-self:center;background:var(--paper);border:1px solid var(--line);padding:7px 8px;min-width:0;box-shadow:2px 2px 0 #181d2720}
+.node b,.node span{display:block}
+.node b{font-size:clamp(.8rem,2vw,1rem)}
+.node span{font:650 .76rem var(--mono);margin-top:4px;color:var(--muted)}
+.critical{border-color:var(--signal)}
+.prep{grid-area:1/1/3/2}.check{grid-area:1/2/2/3}.optional{grid-area:2/2/3/3}.exam{grid-area:1/3/3/4;background:var(--signal);color:#fff9ed}
+.exam span{color:inherit}
+.foot{padding:12px 0 22px;border:0;font-size:.875rem;color:var(--muted)}
+.urgent .clock,.done .clock{background:var(--ink);color:var(--paper)}
+.urgent .label,.done .label{color:#d1cec5}
+.urgent .unit+.unit,.done .unit+.unit{border-color:#666a72}
+.urgent .unit:last-child .value,.done .value{color:#ff805e}
+[hidden]{display:none}
+@media(max-width:520px){.course span{max-width:145px;line-height:1.2}.meta{align-items:flex-start;flex-wrap:wrap}.value{font-size:13vw}.label{margin-top:8px}.foot{line-height:1.5}}
+@media(prefers-reduced-motion:reduce){main{animation:none}}
+
+.page{background-image:linear-gradient(90deg,transparent calc(100% - 1px),#181d2711 0);background-size:calc(100% / 12) 100%}
+.masthead{border-bottom:3px double var(--ink)}
+.hero{padding-top:clamp(22px,4vh,46px);padding-bottom:24px}
+.clock{position:relative;margin-top:14px}
+.unit{position:relative;padding-bottom:15px;background:linear-gradient(0deg,#181d2709,transparent 38%)}
+.unit::before,.unit::after{content:"";position:absolute;top:0;width:5px;height:5px;border-top:1px solid currentColor}
+.unit::before{left:0;border-left:1px solid currentColor}
+.unit::after{right:0;border-right:1px solid currentColor}
+.scale{display:grid;grid-template-columns:repeat(60,minmax(0,1fr));align-items:end;height:17px;border-bottom:1px solid var(--line);margin-top:6px}
+.scale i{border-left:1px solid var(--line);height:5px}
+.scale i:nth-child(5n + 1){height:10px;border-color:var(--muted)}
+.scale i.active{height:17px;border-left:2px solid var(--signal)}
+.scaleText{display:flex;justify-content:space-between;font:650 .75rem var(--mono);color:var(--muted);margin-top:5px}
+.blueprint{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(240px,1fr);gap:clamp(14px,2.5vw,38px);border-top:3px double var(--ink)}
+.diagram{border:0;margin:0}
+.network{grid-template-rows:repeat(2,minmax(82px,auto));gap:12px 8%;padding:15px clamp(6px,2vw,26px)}
+.node{padding:6px}
+.node dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:5px 0 0;border-top:1px solid #9999;font:.7rem var(--mono)}
+.node dl div{padding-top:4px}
+.node dt{opacity:.85}
+.node dd{margin:1px 0 0;font-weight:800}
+.node span{font-size:.7rem}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;padding:8px 0;color:var(--muted);font-size:.75rem}
+.legend span:first-child{color:var(--signal)}
+.side h2{font-size:.9rem;margin:12px 0}
+.calc{width:100%;border-collapse:collapse;font:.8rem var(--mono);text-align:left;background:#f2efe5cd}
+.calc td,.calc th{border:1px solid var(--line);padding:5px 7px}
+.calc strong{color:var(--signal)}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);background:#f2efe5cd}
+.checklist label{display:flex;gap:5px;align-items:center;padding:6px;font-size:.78rem}
+.checklist label:nth-child(odd){border-right:1px solid var(--line)}
+.checklist label:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.checklist input{accent-color:var(--signal);margin:0;min-width:14px}
+.sheet{display:grid;grid-template-columns:minmax(100px,1fr) repeat(3,minmax(0,1fr));border:1px solid var(--ink);margin:12px 0 0;background:#f2efe5cd}
+.sheet h2,.sheet div{padding:7px 9px;margin:0;font-size:.8rem}
+.sheet h2{background:var(--ink);color:var(--paper);display:grid;align-content:center}
+.sheet div+div{border-left:1px solid var(--line)}
+.sheet b,.sheet span{display:block}
+.sheet span{font-size:.75rem;color:var(--muted);margin-top:3px}
+@media(max-width:520px){.sheet{grid-template-columns:1fr 1fr 1fr}.sheet h2{grid-column:1/-1}.sheet h2,.sheet div{padding:6px}}
+.foot{border-top:1px solid var(--ink);margin-top:10px;align-items:flex-start}
+.foot span:last-child{font:650 .75rem var(--mono);text-align:right}
+@media(max-width:760px){.blueprint{grid-template-columns:1fr;gap:0}.side{display:grid;grid-template-columns:1fr 1fr;gap:10px}.side h2{margin:8px 0}.foot{font-size:.75rem}}
+@media(max-width:420px){.side{grid-template-columns:1fr}.node dl{font-size:.62rem}.node b{font-size:.73rem}.network{gap:10px 5%}.course span{font-size:.75rem}}
+</style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="masthead">
+    <div class="course"><b>IS5540</b><span>Project Management &amp; Quality Assurance</span></div>
+    <button id="fullscreen" hidden>全屏</button>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="heading">
+      <div class="meta">
+        <span class="status" id="status" role="status">开考前</span>
+        <time id="examTime" datetime="2026-11-20T14:50:00+08:00">11 月 20 日 14:50 · 北京时间</time>
+      </div>
+      <h1 id="heading">距离开考</h1>
+      <div class="clock" role="timer" aria-label="距离开考的剩余时间">
+        <div class="unit"><span class="value" id="days">--</span><span class="label">天</span></div>
+        <div class="unit"><span class="value" id="hours">--</span><span class="label">小时</span></div>
+        <div class="unit"><span class="value" id="minutes">--</span><span class="label">分钟</span></div>
+        <div class="unit"><span class="value" id="seconds">--</span><span class="label">秒</span></div>
+      </div>
+      <div class="scale" id="scale" aria-hidden="true"></div>
+      <div class="scaleText" aria-hidden="true"><span>00</span><span>15</span><span>30</span><span>45</span><span>59 秒</span></div>
+    </section>
+    <div class="blueprint">
+    <figure class="diagram">
+      <figcaption>考前活动网络图 · CPM 算例 <span>关键路径 A → B → D</span></figcaption>
+      <div class="network" id="network">
+        <canvas id="routes" aria-hidden="true"></canvas>
+        <div class="node critical prep" id="prep"><b>A · 收好资料</b><span>5 分 · 时差 0</span><dl><div><dt>ES</dt><dd>00</dd></div><div><dt>EF</dt><dd>05</dd></div><div><dt>LS</dt><dd>00</dd></div><div><dt>LF</dt><dd>05</dd></div></dl></div>
+        <div class="node critical check" id="check"><b>B · 就位核查</b><span>8 分 · 时差 0</span><dl><div><dt>ES</dt><dd>05</dd></div><div><dt>EF</dt><dd>13</dd></div><div><dt>LS</dt><dd>05</dd></div><div><dt>LF</dt><dd>13</dd></div></dl></div>
+        <div class="node optional" id="optional"><b>C · 回顾错题</b><span>3 分 · 时差 5</span><dl><div><dt>ES</dt><dd>05</dd></div><div><dt>EF</dt><dd>08</dd></div><div><dt>LS</dt><dd>10</dd></div><div><dt>LF</dt><dd>13</dd></div></dl></div>
+        <div class="node critical exam" id="exam"><b>D · 开考</b><span>0 分 · 里程碑</span><dl><div><dt>ES</dt><dd>13</dd></div><div><dt>EF</dt><dd>13</dd></div><div><dt>LS</dt><dd>13</dd></div><div><dt>LF</dt><dd>13</dd></div></dl></div>
+      </div>
+      <div class="legend"><span>红实线 · 关键路径</span><span>灰虚线 · 非关键路径</span><span>ES / EF 最早开始 / 完成</span><span>LS / LF 最晚开始 / 完成</span></div>
+    </figure>
+    <aside class="side" aria-label="路径计算与考前核查">
+      <section>
+        <h2>路径计算</h2>
+        <table class="calc" aria-label="路径工期与时差（分钟）">
+          <thead><tr><th scope="col">路径</th><th scope="col">工期</th><th scope="col">时差</th></tr></thead>
+          <tbody><tr><td><strong>A–B–D</strong></td><td>13 分</td><td><strong>0 分</strong></td></tr><tr><td>A–C–D</td><td>8 分</td><td>5 分</td></tr></tbody>
+        </table>
+      </section>
+      <section>
+        <h2>考前核查 <output id="checkCount">0 / 4</output></h2>
+        <div class="checklist" id="checklist">
+          <label><input type="checkbox">证件</label>
+          <label><input type="checkbox">考试地点</label>
+          <label><input type="checkbox">文具</label>
+          <label><input type="checkbox">到场时间</label>
+        </div>
+      </section>
+    </aside>
+    </div>
+    <section class="sheet" aria-label="考前工作分解结构">
+      <h2>考前 WBS</h2>
+      <div><b>1.1 资料准备</b><span>证件 · 文具</span></div>
+      <div><b>1.2 考场就位</b><span>地点 · 到场时间</span></div>
+      <div><b>1.3 考前回顾</b><span>错题 · 关键公式</span></div>
+    </section>
+  </main>
+  <footer class="foot"><span>算例依据 IS5540 L05 进度管理 · 活动工期为示例</span><span>前推求 ES / EF · 后推求 LS / LF</span></footer>
+</div>
+<script>
+const byId = id => document.getElementById(id);
+const page = byId('page');
+const target = Date.parse(byId('examTime').dateTime);
+const timeFields = ['days', 'hours', 'minutes', 'seconds'].map(byId);
+const heading = byId('heading');
+const statusLabel = byId('status');
+const scale = byId('scale');
+const ticks = Array.from({ length: 60 }, () => scale.appendChild(document.createElement('i')));
+let activeTick;
+const checklist = byId('checklist');
+checklist.addEventListener('change', () => {
+  byId('checkCount').value = checklist.querySelectorAll('input:checked').length + ' / 4';
+});
+
+function renderCountdown(now = Date.now()) {
+  const remaining = Math.max(0, target - now);
+  const seconds = Math.ceil(remaining / 1000);
+  const parts = [Math.floor(seconds / 86400), Math.floor(seconds / 3600) % 24, Math.floor(seconds / 60) % 60, seconds % 60];
+  timeFields.forEach((field, index) => {
+    const value = String(parts[index]).padStart(2, '0');
+    if (field.textContent !== value) field.textContent = value;
+  });
+  const tick = ticks[seconds % 60];
+  if (activeTick !== tick) {
+    activeTick?.classList.remove('active');
+    tick.classList.add('active');
+    activeTick = tick;
+  }
+  const done = remaining === 0;
+  const urgent = !done && remaining <= 60000;
+  page.classList.toggle('urgent', urgent);
+  page.classList.toggle('done', done);
+  const title = done ? '开考时间到' : '距离开考';
+  const status = done ? '里程碑已到' : urgent ? '最后一分钟' : '开考前';
+  if (heading.textContent !== title) heading.textContent = title;
+  if (statusLabel.textContent !== status) statusLabel.textContent = status;
+}
+renderCountdown();
+setInterval(renderCountdown, 150);
+document.addEventListener('visibilitychange', () => renderCountdown());
+
+const network = byId('network');
+const canvas = byId('routes');
+const context = canvas.getContext('2d');
+const links = [
+  ['prep', 'optional', false], ['optional', 'exam', false],
+  ['prep', 'check', true], ['check', 'exam', true]
+];
+function drawRoutes() {
+  if (!context) return;
+  const bounds = network.getBoundingClientRect();
+  const scale = window.devicePixelRatio || 1;
+  canvas.width = Math.round(bounds.width * scale);
+  canvas.height = Math.round(bounds.height * scale);
+  context.scale(scale, scale);
+  for (const [start, end, critical] of links) {
+    const from = byId(start).getBoundingClientRect();
+    const to = byId(end).getBoundingClientRect();
+    const x1 = from.right - bounds.left;
+    const x2 = to.left - bounds.left;
+    const y1 = from.top + from.height / 2 - bounds.top;
+    const y2 = to.top + to.height / 2 - bounds.top;
+    const middle = (x1 + x2) / 2;
+    context.strokeStyle = critical ? '#aa2f1d' : '#73757a';
+    context.lineWidth = critical ? 2 : 1;
+    context.setLineDash(critical ? [] : [4, 4]);
+    context.beginPath();
+    context.moveTo(x1, y1);
+    context.lineTo(middle, y1);
+    context.lineTo(middle, y2);
+    context.lineTo(x2, y2);
+    context.stroke();
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(x2 - 7, y2 - 4);
+    context.lineTo(x2 - 1, y2);
+    context.lineTo(x2 - 7, y2 + 4);
+    context.stroke();
+  }
+}
+drawRoutes();
+new ResizeObserver(drawRoutes).observe(network);
+
+const fullscreen = byId('fullscreen');
+if (document.fullscreenEnabled && document.documentElement.requestFullscreen) {
+  fullscreen.hidden = false;
+  fullscreen.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      fullscreen.textContent = '全屏不可用';
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    fullscreen.textContent = document.fullscreenElement ? '退出全屏' : '全屏';
+  });
+}
+</script>
+</body>
+</html>
